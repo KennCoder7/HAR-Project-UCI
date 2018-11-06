@@ -46,7 +46,6 @@ conv1 = tf.layers.conv2d(
     strides=[1, 1],
     padding='valid',
     activation=tf.nn.relu,
-    name="conv1"
 )
 print("### convolution layer 1 shape: ", conv1.shape, " ###")
 
@@ -56,7 +55,6 @@ pool1 = tf.layers.max_pooling2d(
     pool_size=[4, 4],
     strides=[4, 4],
     padding='same',
-    name="pool1"
 )
 print("### pooling layer 1 shape: ", pool1.shape, " ###")
 
@@ -68,7 +66,6 @@ conv2 = tf.layers.conv2d(
     strides=[1, 1],
     padding='valid',
     activation=tf.nn.relu,
-    name="conv2"
 )
 print("### convolution layer 2 shape: ", conv2.shape, " ###")
 
@@ -78,7 +75,6 @@ pool2 = tf.layers.max_pooling2d(
     pool_size=[2, 4],
     strides=[2, 4],
     padding='valid',
-    name="pool2"
 )
 print("### pooling layer 2 shape: ", pool2.shape, " ###")
 
@@ -90,7 +86,6 @@ fc1 = tf.layers.dense(
     inputs=flat,
     units=120,
     activation=tf.nn.relu,
-    name="fc1"
 )
 # fc1 = tf.nn.dropout(fc1, keep_prob=0.5)
 print("### fully connected layer 1 shape: ", fc1.shape, " ###")
@@ -100,26 +95,19 @@ sof = tf.layers.dense(
     inputs=fc1,
     units=num_labels,
     activation=tf.nn.softmax,
-    name="softmax"
 )
 print("### softmax layer  shape: ", sof.shape, " ###")
 
 y_ = sof
 print("### prediction shape: ", y_.get_shape(), " ###")
 
-saver = tf.train.Saver()
-tf.add_to_collection("y_", y_)
-
-loss = -tf.reduce_sum(Y * tf.log(tf.clip_by_value(y_, 1e-10, 1.0)), name="loss")
-
-
+loss = -tf.reduce_sum(Y * tf.log(tf.clip_by_value(y_, 1e-10, 1.0)))
 train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
-
-# with tf.name_scope("evaluation"):
 correct_prediction = tf.equal(tf.argmax(y_, 1), tf.argmax(Y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name="accuracy")
 
 with tf.Session() as session:
+    saver = tf.train.Saver()
     tf.global_variables_initializer().run()
     for epoch in range(num_epoches):
         # cost_history = np.empty(shape=[0], dtype=float)
@@ -148,7 +136,7 @@ with tf.Session() as session:
                 min_acc = test_acc
 
 # 2018/11/5 10c5*5-p4*4-100c5*5-p2*4-fc120-sof AdamOptimizer
-# Epoch:  100  Training Loss:  5.863849  Training Accuracy:  0.9759369
-# Epoch:  100 Valid Accuracy: 0.9623138
-# Epoch:  100 Test Accuracy: 0.93043774
+# Epoch:  100  Training Loss:  0.11656471  Training Accuracy:  0.9664903
+# Epoch:  100 Valid Accuracy: 0.96754116
+# Epoch:  100 Test Accuracy: 0.9321344
 # ### Save model_1 successfully ###

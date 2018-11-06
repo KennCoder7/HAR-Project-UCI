@@ -15,6 +15,6 @@ with tf.Session() as session:
     test_acc = session.run(acc, feed_dict=feed_dict)
     print("Test Accuracy:", test_acc)
 
-# Test Accuracy: 0.93043774
+# Test Accuracy: 0.9321344
 
 
