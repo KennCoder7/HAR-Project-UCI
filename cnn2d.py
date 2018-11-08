@@ -99,15 +99,17 @@ sof = tf.layers.dense(
 print("### softmax layer  shape: ", sof.shape, " ###")
 
 y_ = sof
-print("### prediction shape: ", y_.get_shape(), " ###")
 
+print("### prediction shape: ", y_.get_shape(), " ###")
+argmax_y_ = tf.argmax(y_, 1, name="argmax_y_")
 loss = -tf.reduce_sum(Y * tf.log(tf.clip_by_value(y_, 1e-10, 1.0)))
 train_op = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 correct_prediction = tf.equal(tf.argmax(y_, 1), tf.argmax(Y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32), name="accuracy")
 
+saver = tf.train.Saver()
+
 with tf.Session() as session:
-    saver = tf.train.Saver()
     tf.global_variables_initializer().run()
     for epoch in range(num_epoches):
         # cost_history = np.empty(shape=[0], dtype=float)
@@ -118,14 +120,15 @@ with tf.Session() as session:
             _, c = session.run([train_op, loss], feed_dict={X: batch_x, Y: batch_y})
             # cost_history = np.append(cost_history, c)
         if (epoch + 1) % 10 == 0:
-            print("Epoch: ", epoch + 1, " Training Loss: ", c,
+            print("# Epoch: ", epoch + 1, " Training Loss: ", c,
                   " Training Accuracy: ", session.run(accuracy, feed_dict={X: train_x, Y: train_y}))
         if (epoch + 1) % 50 == 0:
-            print("Epoch: ", epoch + 1, "Valid Accuracy:", session.run(accuracy, feed_dict={X: valid_x, Y: valid_y}))
+            print("# Epoch: ", epoch + 1, "Valid Accuracy:", session.run(accuracy, feed_dict={X: valid_x, Y: valid_y}))
         if (epoch + 1) % 100 == 0:
             test_acc = session.run(accuracy, feed_dict={X: test_x, Y: test_y})
-            print("Epoch: ", epoch + 1, "Test Accuracy:", test_acc)
-            pred_y = session.run(tf.argmax(y_, 1), feed_dict={X: test_x})
+            print("# Epoch: ", epoch + 1, "Test Accuracy:", test_acc)
+            pred_y = session.run(argmax_y_, feed_dict={X: test_x})
+            # print(pred_y.shape)  # (2947,)
             cm = metrics.confusion_matrix(np.argmax(test_y, 1), pred_y, )
             print(cm)
             n = 0
@@ -135,8 +138,4 @@ with tf.Session() as session:
                 print("### Save model_" + str(n) + " successfully ###")
                 min_acc = test_acc
 
-# 2018/11/5 10c5*5-p4*4-100c5*5-p2*4-fc120-sof AdamOptimizer
-# Epoch:  100  Training Loss:  0.11656471  Training Accuracy:  0.9664903
-# Epoch:  100 Valid Accuracy: 0.96754116
-# Epoch:  100 Test Accuracy: 0.9321344
-# ### Save model_1 successfully ###
+# Epoch:  100 Test Accuracy: 0.90430945
